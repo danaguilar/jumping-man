@@ -59,14 +59,21 @@ var GameState = {
     if(this.cursors.left.isDown) {
       this.player.body.velocity.x = -this.RUNNING_SPEED;
       this.player.animations.play('walking');
+      if(this.player.scale.x < 0){
+        this.player.scale.x *= -1;
+      }
     }
     //On right key down
     else if(this.cursors.right.isDown) {
       this.player.body.velocity.x = this.RUNNING_SPEED;
       this.player.animations.play('walking');
+      if(this.player.scale.x > 0){
+        this.player.scale.x *= -1;
+      }
     }
     else {
       this.player.body.velocity.x = 0;
+      this.player.frame = 3;
     }
 
     if(this.cursors.up.isDown && this.player.body.touching.down) {
