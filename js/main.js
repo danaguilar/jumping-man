@@ -74,6 +74,11 @@ var GameState = {
     this.game.physics.arcade.enable(this.player);
     this.player.body.velocity.x = 0;
 
+    //create goal
+    this.goal = this.add.sprite(this.levelData.GoalData.x, this.levelData.GoalData.y, 'goal');
+    this.game.physics.arcade.enable(this.goal);
+    this.goal.body.allowGravity = false;
+
     //Set camera controls
     this.game.camera.follow(this.player);
 
@@ -86,6 +91,7 @@ var GameState = {
     this.game.physics.arcade.collide(this.player, this.ground, this.stopPlayer);
     this.game.physics.arcade.collide(this.player, this.platforms, this.stopPlayer);
     this.game.physics.arcade.overlap(this.player, this.fires, this.killPlayer);
+    this.game.physics.arcade.overlap(this.player, this.goal, this.win);
 
     //On left key down
     if(this.cursors.left.isDown) {
@@ -119,6 +125,11 @@ var GameState = {
 
   killPlayer: function(player, fire) {
     console.log('BLARG!  I AM DEAD!');
+    game.state.start('GameState');
+  },
+
+  win: function(player, goal) {
+    console.log('Gottem!');
     game.state.start('GameState');
   }
 };
