@@ -48,12 +48,6 @@ var GameState = {
     this.ground.body.immovable = true;
 
     //create platforms
-    const platformData = [
-      { "x": 0, "y": 430 },
-      { "x": 45, "y": 560 },
-      { "x": 90, "y": 290 },
-      { "x": 0, "y": 140 }
-    ]
     this.platforms = this.add.group();
     this.platforms.enableBody = true;
     this.levelData.PlatformData.forEach((data) => {
@@ -61,6 +55,17 @@ var GameState = {
     }, this)
     this.platforms.setAll('body.allowGravity', false);
     this.platforms.setAll('body.immovable', true);
+
+    //create Fires
+    this.fires = this.add.group();
+    this.fires.enableBody = true;
+    let fire;
+    this.levelData.FireData.forEach((data) => {
+      fire = this.fires.create(data.x, data.y, 'fire');
+      fire.animations.add('fire', [0, 1], 4, true);
+      fire.play('fire');
+    }, this);
+    this.fires.setAll('body.allowGravity', false);
 
     //create player
     this.player = this.add.sprite(this.levelData.PlayerStart.x, this.levelData.PlayerStart.y, 'player', 3);
@@ -80,6 +85,7 @@ var GameState = {
   update: function() {
     this.game.physics.arcade.collide(this.player, this.ground, this.stopPlayer);
     this.game.physics.arcade.collide(this.player, this.platforms, this.stopPlayer);
+    this.game.physics.arcade.overlap(this.player, this.fires, this.killPlayer);
 
     //On left key down
     if(this.cursors.left.isDown) {
@@ -109,8 +115,12 @@ var GameState = {
 
   stopPlayer: function(player, ground) {
     player.body.velocity.y = 0;
-  }
+  },
 
+  killPlayer: function(player, fire) {
+    console.log('BLARG!  I AM DEAD!');
+    game.state.start('GameState');
+  }
 };
 
 //initiate the Phaser framework
