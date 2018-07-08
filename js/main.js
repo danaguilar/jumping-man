@@ -73,11 +73,16 @@ var GameState = {
     this.player.animations.add('walking', [0, 1, 2, 1], 6, true);
     this.game.physics.arcade.enable(this.player);
     this.player.body.velocity.x = 0;
+    this.player.body.collideWorldBounds = true;
 
     //create goal
     this.goal = this.add.sprite(this.levelData.GoalData.x, this.levelData.GoalData.y, 'goal');
     this.game.physics.arcade.enable(this.goal);
     this.goal.body.allowGravity = false;
+
+    //create barrels
+    this.barrels = this.add.group(); 
+    this.barrels.enableBody = true;
 
     //Set camera controls
     this.game.camera.follow(this.player);
@@ -85,14 +90,25 @@ var GameState = {
     //create keyboard controls
     this.cursors = this.game.input.keyboard.createCursorKeys();
 
+    //create events loop
+    this.time.events.loop(Phaser.Timer.SECOND*this.levelData.barrelFrequency, this.createBarrel, this);
 
   },
   update: function() {
-    this.game.physics.arcade.collide(this.player, this.ground, this.stopPlayer);
-    this.game.physics.arcade.collide(this.player, this.platforms, this.stopPlayer);
+    this.game.physics.arcade.collide(this.player, this.ground, this.stopBody);
+    this.game.physics.arcade.collide(this.player, this.platforms, this.stopBody);
     this.game.physics.arcade.overlap(this.player, this.fires, this.killPlayer);
+    this.game.physics.arcade.overlap(this.player, this.barrels, this.killPlayer);
     this.game.physics.arcade.overlap(this.player, this.goal, this.win);
+    this.game.physics.arcade.collide(this.barrels, this.ground, this.stopBody);
+    this.game.physics.arcade.collide(this.barrels, this.platforms, this.stopBody);
 
+    //kill out of bounds barrels
+    this.barrels.forEach((barrel) => {
+      if(barrel.x < 10 && barrel.y > 600){
+        barrel.kill();
+      }
+    });
     //On left key down
     if(this.cursors.left.isDown) {
       this.player.body.velocity.x = -this.RUNNING_SPEED;
@@ -119,8 +135,8 @@ var GameState = {
     }
   },
 
-  stopPlayer: function(player, ground) {
-    player.body.velocity.y = 0;
+  stopBody: function(entity, ground) {
+    entity.body.velocity.y = 0;
   },
 
   killPlayer: function(player, fire) {
@@ -131,6 +147,17 @@ var GameState = {
   win: function(player, goal) {
     console.log('Gottem!');
     game.state.start('GameState');
+  },
+
+  createBarrel: function() {
+    let barrel = this.barrels.getFirstExists(false);
+    if(!barrel) {
+      barrel = this.barrels.create(0, 0, 'barrel');
+    }
+    barrel.reset(this.goal.x, this.goal.y);
+    barrel.body.velocity.x = this.levelData.barrelSpeed;
+    barrel.body.collideWorldBounds = true;
+    barrel.body.bounce.set(1,0);
   }
 };
 
